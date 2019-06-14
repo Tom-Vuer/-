@@ -1,0 +1,219 @@
+/*
+.ani1{
+	animation:myfirst1 6s linear 0.5s infinite;
+}
+.ani2{
+	animation:myfirst2 5.2s linear 0.5s infinite;
+}
+.ani3{
+	animation:myfirst3 4.4s linear 0.5s infinite;
+}
+.ani4{
+	animation:myfirst4 4s linear 0.5s infinite;
+}
+@keyframes myfirst1
+{
+	0% { transform: rotate(0deg); }
+	20% { transform: rotate(4deg); }
+	40% { transform: rotate(0deg); }
+	60% { transform: rotate(-4deg); }
+	100% { transform: rotate(0deg); }
+}
+@keyframes myfirst2
+{
+	0% { transform: rotate(0deg); }
+	20% { transform: rotate(8deg); }
+	40% { transform: rotate(0deg); }
+	60% { transform: rotate(-8deg); }
+	100% { transform: rotate(0deg); }
+}
+@keyframes myfirst3
+{
+	0% { transform: rotate(0deg); }
+	20% { transform: rotate(14deg); }
+	40% { transform: rotate(0deg); }
+	60% { transform: rotate(-14deg); }
+	100% { transform: rotate(0deg); }
+}
+@keyframes myfirst4
+{
+	0% { transform: rotate(0deg); }
+	20% { transform: rotate(18deg); }
+	40% { transform: rotate(0deg); }
+	60% { transform: rotate(-18deg); }
+	100% { transform: rotate(0deg); }
+}
+1）通过动画实现的摆动效果
+2）通过渐变实现的摆动效果
+*/ 
+html,body{
+	height: 100%;
+	overflow: hidden;
+}
+.showInfo{
+	position: relative;
+	height: 50%;
+	background-color: #f1f1f1;
+	overflow: hidden;
+}
+.control{
+	height: 50%;
+	background-color: white;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.touchMode{
+	position: absolute;
+	left: 15px;
+	top: 15px;
+	width: 60px;
+	z-index: 99;
+}
+.quiet{
+	display: block;
+	height: 40px;
+	width: 45px;
+	margin: 0 auto;
+}
+.tip{
+	width: 100%;
+	text-align: center;
+	height: 20px;
+	line-height: 20px;
+	font-size: 13px;
+	color: #959595;
+	font-weight: bold;
+}
+/*闹钟*/
+.connectState{
+	width: 60px;
+	height: 60px;
+	position: absolute;
+	right: 15px;
+	top: 15px;
+	color:#959595;
+	z-index: 100;
+}
+.clock{
+	display: block;
+	height: 40px;
+	width: 40px;
+	margin: 0 auto;
+}
+.timing{
+	width: 100%;
+	text-align: center;
+	height: 20px;
+	line-height: 20px;
+	font-size: 13px;
+	color: #959595;
+	font-weight: bold;
+}
+.showChair{
+	position: absolute;
+	height: 90%;
+	width: 90vw;
+	left: 50%;
+	transform: translate(-50%);
+	bottom: 0;
+}
+/*椅子图片样式*/
+.chair,.support{
+	position: absolute;
+	width: 54vh;
+	left: 50%;
+	margin-left: -27vh;
+	height: 36vh;
+}
+.swing{
+	position: absolute;
+	bottom: 20%;
+	width: 30%;
+	height: 8%;
+	left: 50%;
+	transform: translate(-50%);
+}
+/*椅子旋转相关设置 y轴50px下为中心点*/
+.chair{
+	transform-origin:center 22px;
+	transition-duration: 1.2s;
+	transition-property: transform;
+}
+/*控制部分的外层box*/
+.box{
+	height: 75%;
+	width: 80%;
+	display: flex;
+	flex-direction: column;
+}
+.angleControl,.playControl,.add_reduce_voice{
+	position: relative;
+}
+.row{
+	width: 100%;
+	flex: 1;
+}
+.reduce,.add,.before,.after{
+	position: relative;
+	float: left;
+	height: 100%;
+	width: 20vw;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.add,.after{
+	float: right;
+}
+.reduce img,.add img{
+	position: absolute;
+	display: block;
+	height: 40%;
+	width: 50%;
+}
+.before img,.after img{
+	position: absolute;
+	display: block;
+	height: 30%;
+	width: 40%;
+}
+.angleTip{
+	position: absolute;
+	width: 100px;
+	text-align: center;
+	left: 50%;
+	margin-left: -50px;
+	height: 30px;
+	top: 50%;
+	margin-top: -15px;
+	line-height: 30px;
+	font-size: 20px;
+	color: grey;
+	font-weight: bold;
+	letter-spacing: 2px;
+}
+.play{
+	position: absolute;
+	width: 20vw;
+	height: 100%;
+	left: 50%;
+	margin-left: -10vw;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.play img{
+	position: absolute;
+	height: 40%;
+	width: 50%;
+	display: block
+}
+
+
+
+
+
+
+
+

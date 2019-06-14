@@ -1,0 +1,88 @@
+{
+    "peripherals": [
+        {
+            "advertisingName": "",
+            "rssi": -74,
+            "name": "iPhone (2)",
+            "manufacturerData": "(null)",
+            "uuid": "AA36831D-4697-CCE5-9091-380AB17E5246"
+        },
+        {
+            "advertisingName": "",
+            "rssi": -89,
+            "manufacturerData": "0600010920023f13cdd7fbe67b910f29940e51a5130415bb36fec145fa",
+            "uuid": "AE38A45A-5C4B-4AA0-6C21-AD72D63C3EA1"
+        },
+        {
+            "advertisingName": "Mi Band 3",
+            "rssi": -79,
+            "name": "Mi Band 3",
+            "manufacturerData": "5701005db8539a240736dfcc90cedc325c140a02cbb234618ef0",
+            "uuid": "A0424022-5BE0-9C83-9541-7BC502F8467A"
+        },
+        {
+            "advertisingName": "",
+            "rssi": -83,
+            "name": "carol的iMac",
+            "manufacturerData": "(null)",
+            "uuid": "9E8C47B4-2D62-7E69-1A71-10F318CA882B"
+        },
+        {
+            "advertisingName": "BK3260 BLE",
+            "rssi": -85,
+            "name": "BK3260 BLE",
+            "manufacturerData": "(null)",
+            "uuid": "17281CFF-C279-1931-7208-B9389B859F6B"
+        },
+        {
+            "advertisingName": "ESLinker",
+            "rssi": -96,
+            "name": "ESLinker",
+            "manufacturerData": "(null)",
+            "uuid": "5BEE55AF-6CE1-BDC4-109D-19692A02D8F2"
+        },
+        {
+            "advertisingName": "DeskJet 5000 series",
+            "rssi": -87,
+            "name": "DeskJet 5000 series",
+            "manufacturerData": "6500010005",
+            "uuid": "9EE02C7B-EFE6-5209-20C2-002C5E3A333D"
+        }
+    ]
+},
+{
+    "peripherals": [
+        {
+            "uuid": "7A:3A:D1:C3:EE:56",
+            "rssi": -64,
+            "manufacturerData": "0201060aff4c00100501189186a7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+            "uuid": "FC:58:FB:89:01:D2",
+            "name": "BK3260 BLE",
+            "rssi": -88,
+            "manufacturerData": "0201060201060b09424b3332363020424c450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+            "uuid": "12:6F:F2:3F:9E:BE",
+            "rssi": -90,
+            "manufacturerData": "1eff0600010920023f13cdd7fbe67b910f29940e51a5130415bb36fec145fa00000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+            "uuid": "3B:25:B1:1D:B4:BD",
+            "rssi": -97,
+            "manufacturerData": "1cff06000109210246bf494134f84c4150544f502d4c50565141545633000000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+            "uuid": "CB:B2:34:61:8E:F0",
+            "name": "Mi Band 3",
+            "rssi": -85,
+            "manufacturerData": "0201061bff5701005db8539a240736dfcc90cedc325c140a02cbb234618ef00a094d692042616e6420330302e0fe00000000000000000000000000000000"
+        },
+        {
+            "uuid": "62:5E:23:F7:A5:4A",
+            "rssi": -79,
+            "manufacturerData": "02011a0aff4c001005031cd3726d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        }
+    ]
+}

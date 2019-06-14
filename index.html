@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,initial-scale=1.0,width=device-width" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>index</title>
+    <link rel="stylesheet" type="text/css" href="./css/api.css" />
+    <style type="text/css">
+        body,html{
+            height: 100%;
+            background-color: white;
+        }
+        header{
+            height: 40px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            background-color: lightcoral;
+        }
+        .menu{
+            float: left;
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        .set{
+            float: right;
+            margin-right: 20px;
+            margin-top: 10px;
+        }
+        img{
+            height: 20px;
+            width: 20px;
+        }
+        .title{
+            position: absolute;
+            height: 20px;
+            line-height: 20px;
+            width: 80px;
+            text-align: center;
+            color: white;
+            font-size: 17px;
+            left: 50%;
+            margin-left: -40px;
+            margin-top: 10px;
+            display: none;
+        }
+        .connectTip{
+            position: absolute;
+            height: 20px;
+            line-height: 20px;
+            width: 80px;
+            text-align: center;
+            color: white;
+            font-size: 17px;
+            left: 50%;
+            margin-left: -40px;
+            margin-top: 10px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <header id="header">
+        <div class="menu"  onclick="controlFrame();">
+            <img src="./image/menu.png"  id="menu">
+        </div>
+        <div class="title">使用说明</div>
+        <div class="connectTip">未连接</div>
+        <div class="set">
+            <img src="./image/setting.png" id="set"   onclick="connectBle();">
+        </div>
+    </header>
+</body>
+<script type="text/javascript" src="./script/api.js"></script>
+<script type="text/javascript">
+    //连接页面
+    function connectBle(){
+        myOpenFrame('ble',headerH)
+    }
+    let headerH;
+    //自定义打开frame的方法
+    function myOpenFrame(name,headerH){
+        api.openFrame({
+            name: name,
+            url: `html/${name}.html`,
+            bounces: false,
+            rect:{
+                x: 0,
+                marginTop: headerH,
+                w: 'auto',
+                h: 'auto'
+            }
+        });
+    }
+    //主函数
+    apiready = function(){
+        api.addEventListener({    
+            name: 'connect'
+        }, function(ret, err){
+            //连接
+            document.getElementsByClassName('connectTip')[0].innerHTML = '已连接'                  
+        });
+        let header = $api.byId('header');
+        headerH = $api.fixStatusBar(header);
+        myOpenFrame('main',headerH);
+    }
+    //点击菜单按钮触发的函数
+    function controlFrame(){
+        let title = document.getElementsByClassName('title')[0];
+        let connectTip = document.getElementsByClassName('connectTip')[0];
+        let set = document.getElementsByClassName('set')[0];
+        let menu = document.getElementById('menu');
+        if(set.style.display != 'none'){
+            title.style.display = 'block';
+            connectTip.style.display = 'none'
+            set.style.display = 'none'
+            menu.src = './image/back.png'
+            myOpenFrame('direction',headerH);
+        }else{
+            set.style.display = 'block'
+            title.style.display = 'none';
+            connectTip.style.display = 'block'
+            menu.src = './image/menu.png';
+            api.closeFrame({
+                name: 'direction'
+            });
+        }   
+    } 
+</script>
+</html>

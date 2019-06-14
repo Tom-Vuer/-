@@ -1,0 +1,165 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, initial-scale=1.0, width=device-width" />
+    <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
+    <title>ble</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <style>
+        html,body{
+            position: relative;
+        }
+        .blank{
+            width: 100vw;
+            height: 10px;
+        }
+        .deviceName{
+            overflow: hidden;
+        }
+       .deviceName li{
+           height: 45px;
+           line-height: 45px;
+           width: 90vw;
+           text-align: center;
+           margin: 0 auto;
+           border-radius: 8px;
+           font-size: 13px;
+           margin-top: 10px;
+       }
+       .title{
+           height: 60px;
+           line-height: 60px;
+           width: 100vw;
+           text-align:center;
+           font-size: 25px;
+       }
+       .even{
+           background-color: lightcoral;
+       }
+       .odd{
+           background-color: #c4c4c4;
+       }
+       .btn{
+           position: fixed;
+           height: 45px;
+           width: 100px;
+           background-color: rgba(0, 0, 0, 0.5);
+           outline: none;
+           border-radius: 6px;
+           color: white;
+           font-size: 20px;
+           left: 50%;
+           margin-left: -50px;
+           top: 85vh;
+       }
+       [v-cloak]{
+           display: none;
+       }
+    </style>
+</head>
+<body>
+    <div id="main" v-cloak>
+        <div class="blank"></div>
+        <div class="title">周边的设备</div>
+        <ul class="deviceName">
+            <li @click="connect(name.uuid)"  :class="index%2==0?'even':'odd'" v-for='(name,index) in deviceNameArr' :key='index'>{{name.name}}</li>
+        </ul>
+        <button class="btn"  onclick="back();">返回</button>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/Vue.js"></script>
+<script type="text/javascript">
+    //动态变化的设备的信息  
+    let allDevice=[];
+    //蓝牙变量  
+    let ble;
+    //定时器
+    let timer;
+    //vue实例
+    var vm = new Vue({
+        el:'#main',
+        data:function(){
+            return{
+                deviceNameArr:[]  
+            }
+        },
+        methods:{
+            connect(deviceName){    //此时的name就是数组里的设备uuid 点击连接
+                api.sendEvent({
+                    name: 'connectEvent',  //转发至main页面进行连接保证蓝牙模块的稳定性
+                    extra: {
+                        value: deviceName    //此时传递的参数是设备uuid  提供连接
+                    }
+                });
+                $api.setStorage('ble',ble);
+                clearInterval(timer);   //关闭定时器
+                api.closeFrame();      //关闭页面连接逻辑在main中执行
+                // ble.connect({
+                //     peripheralUUID: deviceName
+                // }, function(ret, err) {
+                //     if (ret.status) {
+                //         alert("连接成功！");
+                //     } else {
+                //         alert(err.code);
+                //     }
+                // });
+            }
+        }
+    })
+    //返回函数
+    function back(){
+        api.hideProgress();
+        api.closeFrame({
+            name: 'ble'
+        }); 
+    }
+    //主函数
+    apiready = function(){
+            //扫描附近设备   并展示
+            initBle();
+            api.showProgress({
+                title: '设备扫描中...',
+                text: '请稍后...',
+                modal: true
+            });
+            setTimeout(()=>{
+                api.hideProgress()
+            },3000)
+    }
+    //蓝牙相关的函数
+    function initBle(){
+      ble = api.require('ble');
+      //初始化
+      ble.initManager(function(ret){
+            if(ret.state == "poweredOn"){
+                //扫描
+                ble.scan({}, function(ret) {
+                    if (ret.status){
+                        timer = setInterval(()=>{
+                            ble.getPeripheral(function(ret) {
+                                if (ret) {
+                                    allDevice = ret.peripherals;
+                                    //实时更新设备信息
+                                    vm.$data.deviceNameArr = [];
+                                    for(let i=0;i<allDevice.length;i++){
+                                        //--------------过滤蓝牙设备的id-------------//
+                                        if(allDevice[i].name   &&  (allDevice[i].name.indexOf("BLE") != -1)){
+                                            vm.$data.deviceNameArr.push(allDevice[i])  //展示设备信息
+                                        }
+                                    }
+                                }
+                            });
+                        },1000)   //不停扫描更新附近的设备  2s更新一次
+                    }
+                });
+            }else if(ret.state == 'poweredOff'){
+                alert('请打开蓝牙')
+            }else{
+                alert('设备异常')
+            }
+        });
+    }
+</script>  
+</html>

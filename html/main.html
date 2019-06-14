@@ -1,0 +1,380 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, initial-scale=1.0, width=device-width" />
+    <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
+    <title>main</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+    <!--  onclick="quiet(event);"加在class="touchMode"后  -->
+    <div class="showInfo">
+        <!--安抚模式-->
+        <div class="touchMode"  onclick="quiet(event);">
+            <img src="../image/quite.png" class="quiet">
+            <div class="tip">关闭状态</div>
+        </div>
+        <!--椅子展示-->
+        <div class="showChair">
+            <img src="../image/chair.png"  class="chair">
+            <img src="../image/support.png" class="support">
+            <img src="../image/swing.png" alt="" class="swing">
+        </div>
+        <!--定时显示-->
+        <div class="connectState" onclick="setTime()">
+            <img src="../image/time.png" alt="" class="clock">
+            <div class="timing">无</div>
+        </div>
+    </div>
+    <!-- 控制部分 -->
+    <div class="control">
+        <div class="box">
+            <!-- 角度控制 -->
+            <div class="angleControl row">
+                <div class="reduce">
+                    <img src="../image/reduce.png" onclick="reduceAngle();">
+                </div>
+                <div class="angleTip">切换档位</div>
+                <div class="add">
+                    <img src="../image/add.png"  onclick="addAngle();">
+                </div>
+            </div>
+            <!-- 音量控制 -->
+            <div class="add_reduce_voice row">
+                <div class="reduce">
+                    <img src="../image/reduce.png" onclick="reduceVoice();">
+                </div>
+                <div class="angleTip">音量加减</div>
+                <div class="add">
+                    <img src="../image/add.png"  onclick="addVoice();">
+                </div>
+            </div>
+            <!-- 播放音乐 -->
+            <div class="playControl row">
+                <div class="before">
+                    <img src="../image/before.png" onclick="before();">
+                </div>
+                <div class="play">
+                    <img src="../image/play.png" class="controlPlay"  onclick="play();">
+                </div>
+                <div class="after">
+                    <img src="../image/after.png"onclick="after();" >
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/tools.js"></script>
+<!-- voice -->
+<script type="text/javascript" src="../script/voice.js"></script>
+<!-- switch -->
+<script type="text/javascript" src="../script/switch.js"></script>
+<!-- settime -->
+<script type="text/javascript" src="../script/setTime.js"></script>
+<!-- music -->
+<script type="text/javascript" src="../script/music.js"></script>
+<!-- swing -->
+<script type="text/javascript" src="../script/swing.js"></script>
+<script type="text/javascript">
+    //蓝牙相关的参数  提取设备的相关uuid的对象
+    let myUUIDObj;
+    //将获取到的uuid保存至本地（其实没什么用 可以不用在意）  
+    let UUID_OBJ = {};
+    //用来判断设备是否已连接  初始情况属于未连接
+    let isConnect = false;
+    let ble;
+    //设置初始档位
+    let level = 1;
+    //设置单格角度为4.6deg  到时候需要调整!!!!!!!!!!!!!!!!!!!!!!!!!
+    let angle = -8;
+    //获取椅子  
+    let chair = document.getElementsByClassName('chair')[0];
+    //设置定时器
+    let timer;
+    //是否已连接  控制用户是否能够操作页面
+    ifCan = false
+    //设备名称uuid
+    let myUUID;
+    //设备服务uuid
+    let myServiceUUID;
+    //设备特征uuid
+    let myCharacteristicsUUID;
+    //是否播放
+    let isplay = false;
+    //是否为安抚模式
+    let isquiet = false;
+    //设备开关
+    let switch_control = false;
+    //设备音乐初始音量(初始数据为05)
+    let indexVoice = 5;
+    //删除本地数据函数 进来就删除所有保存的设备相关信息
+    function removeBle(){
+        $api.rmStorage('uuid')
+    }
+
+
+    //---------------------功能---------------------//
+    //音量降低
+    function reduceVoice(){ voice.reduceVoice() }
+    //音量增加
+    function addVoice(){ voice.addVoice() }
+    //设备开关
+    function quiet(){ switchObj.quiet() }
+    //摇椅定时
+    function setTime(){ setTimeObj.setTime() }
+    //播放音乐功能
+    function play(){ music.play() }
+    //上一首
+    function before(){ music.before() }
+    //下一首
+    function after(){ music.after() }
+    //加档
+    function addAngle(){ swingObj.addAngle() }
+    //减档
+    function reduceAngle(){ swingObj.reduceAngle() }
+    //---------------------功能---------------------//
+
+
+
+    //------------------------------<主逻辑>------------------------------//
+    apiready = function(){
+        removeBle()  //进入页面时清空本地数据  （处于蓝牙未连接状态）  
+        //监听用户点击连接蓝牙设备
+        api.addEventListener({    
+            name: 'connectEvent'
+        }, function(ret, err){
+            //获取到设备的uuid
+            myUUID = ret.value.value;
+            UUID_OBJ.myUUID = myUUID
+            c_ble(myUUID);                  
+        });
+    }
+    //------------------------------<主逻辑>------------------------------//
+
+
+
+
+    //----------------------与蓝牙相关的函数----------------------//
+    function c_ble(myUUID){
+        isConnect = false;
+        ble = api.require('ble');
+        api.showProgress({
+            title: '正在连接...',
+            text:  '请稍后...',
+            modal:  true
+        });
+        //设置连接超时
+        let testTimer = setTimeout(()=>{
+            if(!isConnect){
+                api.hideProgress();
+                alert('连接失败，请尝试重新连接')
+            }
+        },13000)
+        //蓝牙初始化
+        ble.initManager(function(ret){
+                if(ret.state == "poweredOn") {
+                    ble.scan({}, function(ret) {
+                        if (ret.status){
+                            setTimeout(()=>{
+                            //正在扫描 尝试去连接设备
+                            ble.connect({
+                                peripheralUUID:myUUID   
+                            }, function(ret,err) {
+                                if (ret.status) {
+                                    console.log("连接成功")
+                                    api.hideProgress();
+                                    isConnect = true;
+                                    //关闭定时器
+                                    clearTimeout(testTimer)
+                                    //连接成功 停止搜索附近的设备
+                                    ble.stopScan();
+                                    //获取指定的设备服务
+                                    ble.discoverService({
+                                        peripheralUUID: myUUID
+                                    }, function(ret) {
+                                        if (ret) {
+                                            //服务uuid保存至本地变量 使用哪组服务uuid的问题 
+                                            myServiceUUID = ret.services;
+                                            UUID_OBJ.myServiceUUID = myServiceUUID
+                                            //获取指定的特征
+                                            ble.discoverCharacteristics({
+                                            //哪组服务id下的特征uuid 本例用[0]
+                                            serviceUUID: myServiceUUID[0],  
+                                            peripheralUUID: myUUID
+                                            }, function(ret) {
+                                                    if (ret) {
+                                                        //程序已经获取到设备的 名称uuid 服务uuid数组 特征uuid
+                                                        console.log("discoverCharacteristics-----"+JSON.stringify(ret))
+                                                        myCharacteristicsUUID = ret.characteristics[0].uuid
+                                                        UUID_OBJ.myCharacteristicsUUID = myCharacteristicsUUID
+                                                        //相关的uuid存入手机中
+                                                        $api.setStorage('uuid',UUID_OBJ);
+                                                        //监听数据回发
+                                                        console.log(myCharacteristicsUUID)
+                                                        ble.setNotify({
+                                                            peripheralUUID: myUUID,
+                                                            serviceUUID: myServiceUUID[0],
+                                                            characteristicUUID: myCharacteristicsUUID
+                                                        }, function(ret,err){
+                                                            console.log("err--------"+JSON.stringify(err))
+                                                            if (ret){
+                                                                //(1)  连接信号
+                                                                let str = ret.characteristic.value;
+                                                                //打印收到的数据  监听数据  只要收到数据就及时打印
+                                                                console.log(str)
+                                                                    if(str.indexOf('a00505c2ef5b') != -1 ){
+                                                                        api.toast({
+                                                                            msg: '设备连接成功',
+                                                                            duration: 1000,
+                                                                            location: 'middle'
+                                                                        });
+                                                                        //设备连接成功事件  通知index更换inner
+                                                                        api.sendEvent({
+                                                                            name: 'connect',  
+                                                                            extra: {}
+                                                                        });
+                                                                        ifCan = true;
+                                                                } 
+                                                                //防止两段信号合并
+                                                                if(str.length > 20){
+                                                                     //判断音量
+                                                                    if(str[19] != '0' && str[19] != indexVoice ){
+                                                                        console.log(str[19])
+                                                                        indexVoice = parseInt(str[19])
+                                                                    }
+                                                                    //摇椅定时判断  收到设备停止数据  就改变定时页面的信息（摇椅定时发过来的数据）
+                                                                    if(str[17] == '4'){
+                                                                        document.getElementsByClassName('timing')[0].innerHTML = '无'
+                                                                    }
+                                                                     //判断开关是否已经打开
+                                                                    if(str[9] == '2' && str[11] == '1' ){
+                                                                        switch_control = true;
+                                                                        document.getElementsByClassName('tip')[0].innerHTML = '开机状态'
+                                                                    }
+                                                                    if(str[9] == '1' && str[11] == '1' ){
+                                                                        switch_control = false;
+                                                                        document.getElementsByClassName('tip')[0].innerHTML = '关机状态'
+                                                                        //A0050CC702010000000000EF6A
+                                                                    }
+                                                                    // (3) 用户操作 设备给予的回应信号
+                                                                    if(str.indexOf('a0050cc8') != -1){
+                                                                        if(str[13] == '1'){
+                                                                            isplay = true;
+                                                                            document.getElementsByClassName('controlPlay')[0].src = '../image/pau.png'
+                                                                        }else if(str[13] == '2'){
+                                                                            isplay = false
+                                                                            document.getElementsByClassName('controlPlay')[0].src = '../image/play.png'
+                                                                        } 
+                                                                        //2档
+                                                                        if(str[11] == '2'){
+                                                                            level = 2;
+                                                                            clearInterval(timer)
+                                                                            swing(level)
+                                                                        }
+                                                                        //3档
+                                                                        if(str[11] == '3'){
+                                                                            level = 3;
+                                                                            clearInterval(timer)
+                                                                            swing(level)
+                                                                        }
+                                                                        //4档位
+                                                                        if(str[11] == '4'){
+                                                                            level = 4;
+                                                                            clearInterval(timer)
+                                                                            swing(level)
+                                                                        }
+                                                                        //关闭
+                                                                        if(str[11] == '1'){
+                                                                            level = 1;
+                                                                            clearInterval(timer);
+                                                                            //椅子还原
+                                                                            chair.style.transform = `rotate(0deg)`
+                                                                        } 
+                                                                    }
+                                                                }
+                                                                //(2) 接收设备状态（起始连接设备的时候传来的数据） 两段信号 分别为 长和短 信号
+                                                                if(str.length > 35){
+                                                                    if(checkShort(str)){
+                                                                        let short = str.slice(0,12);
+                                                                    }
+                                                                    //长信号
+                                                                    if(checkLong(str)){
+                                                                        let long = str.slice(12,38);
+                                                                        console.log(long)
+                                                                        //判断开关是否已经打开
+                                                                        if(long[9] == '2'){
+                                                                            switch_control = true;
+                                                                            document.getElementsByClassName('tip')[0].innerHTML = '开机状态'
+                                                                        }
+                                                                        if(long[9] == '1'){
+                                                                            switch_control = false;
+                                                                            document.getElementsByClassName('tip')[0].innerHTML = '关机状态'
+                                                                        }
+                                                                        //判断音乐是否在播放
+                                                                        let musicVar = long[13]
+                                                                        if(musicVar == '2'){
+                                                                            console.log('未在播放')
+                                                                            document.getElementsByClassName('controlPlay')[0].src = '../image/play.png'
+                                                                            isplay = false;
+                                                                        }else if(musicVar == '1'){
+                                                                            console.log('正在播放')
+                                                                            document.getElementsByClassName('controlPlay')[0].src = '../image/pau.png'
+                                                                            isplay = true;
+                                                                        }else{
+                                                                            console.log('无效数据')
+                                                                        }
+                                                                        //连接后获取设备的档位状态
+                                                                        if(long[11] == '1'){
+                                                                            level = 1;
+                                                                        }else{
+                                                                            level = parseInt(long[11]);
+                                                                            swing(level)
+                                                                        }
+                                                                    } 
+                                                                }
+                                                                
+                                                            }
+                                                        });
+                                                        //第一次通信   判断已连接
+                                                        setTimeout(()=>{
+                                                                //测试与设备的协议通信
+                                                                console.log("-----"+myUUID)
+                                                                console.log("-----"+myServiceUUID[0])
+                                                                console.log("-----"+myCharacteristicsUUID)
+
+                                                                ble.writeValueForCharacteristic({
+                                                                    peripheralUUID: myUUID,
+                                                                    serviceUUID: myServiceUUID[0],
+                                                                    characteristicUUID: myCharacteristicsUUID, //需要使用特定的特征uuid
+                                                                    value: 'A00505C1EF5A',
+                                                                    writeType:'withoutResponse'
+                                                                }, function(ret,err){
+                                                                    if (ret){}
+                                                                });
+                                                        },1000)
+                                                 }
+                                            });
+                                        }
+                                    });
+                                }else{
+                                    console.log("连接失败")
+                                    // err.code 2 未搜索到该蓝牙设备
+                                    console.log(err.code);
+                                } 
+                            });
+                            },4000)
+                        }
+                    });
+                }else if(ret.state == 'poweredOff'){
+                    alert('请打开蓝牙')
+                }else{
+                    alert('设备异常')
+                }
+            });
+    }
+    //----------------------与蓝牙相关的函数----------------------//
+</script>  
+</html>
